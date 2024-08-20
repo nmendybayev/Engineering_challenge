@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: challenge-pod
+  namespace: java-app
+spec:
+  containers:
+  - name: challenge-container
+    image: nurbolm/java_app_slim:v0.1.0
+    ports:
+      - containerPort: 8080
+    env:
+    - name: API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: api-key-secret
+          key: API_KEY

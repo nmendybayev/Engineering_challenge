@@ -1,0 +1,40 @@
+# Use the official OpenJDK image as a base for the build stage
+FROM openjdk:21-jdk-slim AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the Gradle wrapper and build files
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+
+# Copy project files
+COPY src src
+
+# Grant execution permission to gradlew
+RUN chmod +x gradlew
+
+# Set environment variables
+ENV API_KEY=${API_KEY}
+
+# Build the application
+RUN ./gradlew build --no-daemon
+
+# Create a new stage to minimize the final image size
+FROM openjdk:21-jdk-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the built JAR file from the previous stage
+COPY --from=build /app/build/libs/challenge-0.0.1-SNAPSHOT.jar app.jar
+
+# Set the entry point for the Docker container
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Expose the port the application will run on
+EXPOSE 8080
+
+# Define the health check for the container
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8080/health || exit 1

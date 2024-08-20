@@ -1,0 +1,18 @@
+# Use the official OpenJDK image as a base for the runtime environment
+FROM openjdk:21-jdk-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the pre-built JAR file from the local file system to the container
+COPY build/libs/challenge-0.0.1-SNAPSHOT.jar app.jar
+
+# Set the entry point for the Docker container
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Expose the port that the application will run on
+EXPOSE 8080
+
+# Define a health check to monitor the application
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
